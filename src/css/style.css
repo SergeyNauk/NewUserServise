@@ -1,0 +1,22 @@
+h1 {
+  text-align: center;
+  margin: 20px; }
+
+.margin {
+  margin: 20px auto; }
+
+.prev {
+  margin-left: 38%;
+  cursor: pointer; }
+
+.next {
+  margin-left: 4%;
+  cursor: pointer; }
+
+footer {
+  margin-top: 150px;
+  font-weight: bold;
+  text-align: center; }
+
+li {
+  text-align: center; }
