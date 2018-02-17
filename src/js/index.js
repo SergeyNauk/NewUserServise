@@ -9,7 +9,6 @@ class Data {
         this.userLength = 10;
 
         this.statusChecked = '';
-
         this.statusSortId = '';
         this.statusSortName = '';
         this.statusSortUserName = '';
@@ -41,7 +40,7 @@ class Render {
 
         this.data.userArr.forEach((elem,index) => {
             if (index<this.data.end){
-                let template = `<th scope="col"><input type="checkbox"></th> <th scope="row">${elem.id}</th> <td>${elem.name}</td> <td>${elem.username}</td> <td>${elem.email}</td><td>${elem.phone}</td>`;
+                let template = `<th scope="col"><input type="checkbox"></th> <th scope="row" class="searchEl">${elem.id}</th> <td class="searchEl">${elem.name}</td> <td class="searchEl">${elem.username}</td> <td class="searchEl">${elem.email}</td><td class="searchEl">${elem.phone}</td>`;
                 this.renderUsers.insertAdjacentHTML('beforeEnd', template)
             }
         });
@@ -85,33 +84,19 @@ class Listener {
         this.btnPrev = document.querySelector('.prev');
 
         this.mainCheckbox = document.querySelector('.mainCheckbox');
-
         this.searchInfo = document.querySelector('.searchInfo');
-
-        this.sortId = document.querySelector('.sortId');
-        this.sortName = document.querySelector('.sortName');
-        this.sortUserName = document.querySelector('.sortUserName');
-        this.sortEmail = document.querySelector('.sortEmail');
+        this.delegateDropDown = document.querySelector('.dropdown-menu');
 
         this.data = data;
         this.render = render;
-        this.promise = new Promise(
-            (resolve, reject) => {
-                let response = new XMLHttpRequest();
-                response.open('GET', this.data.url, false);
-                response.send();
-                if (response.status == '200') {
-                    resolve(response.responseText);
-                } else {
-                    reject(response.status);
-                }
-            });
     }
 
     initApp() {
-        this.promise
-            .then(result => {
-                localStorage.setItem('etalonUserArr', result);
+        fetch(this.data.url)
+            .then(response => {
+                return response.json()
+            }).then((result) => {
+                localStorage.setItem('etalonUserArr', JSON.stringify(result));
 
                 this.data.initUserArr();
                 this.render.renderTable();
@@ -121,7 +106,7 @@ class Listener {
                 this.initSort();
                 this.initSearch();
             })
-            .catch(result => console.log(result));
+           .catch(result => console.log('error'));
     }
 
     initButton() {
@@ -165,57 +150,38 @@ class Listener {
     }
 
     initSort() {
-        this.sortId.addEventListener('click', (e)=>{
-            e.preventDefault();
-            this.data.statusSortId =! this.data.statusSortId;
+        this.delegateDropDown.addEventListener('click', (e)=>{
+            this.setStatus(e.target.name);
+            this.sort(e.target.name);
+        });
+    }
 
-            if (this.data.statusSortId){
+    setStatus(type) {
+        switch (type) {
+            case 'id':
+                this.data.statusSortId =! this.data.statusSortId;
                 this.data.statusSortName = '';
                 this.data.statusSortUserName = '';
                 this.data.statusSortEmail = '';
-            }
-
-            this.sort('id');
-        });
-
-        this.sortName.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.data.statusSortName =! this.data.statusSortName;
-
-            if (this.data.statusSortName){
+                break;
+            case 'name':
+                this.data.statusSortName =! this.data.statusSortName;
                 this.data.statusSortId = '';
                 this.data.statusSortUserName = '';
                 this.data.statusSortEmail = '';
-            }
-
-            this.sort('name');
-        });
-
-        this.sortUserName.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.data.statusSortUserName =! this.data.statusSortUserName;
-
-            if (this.data.statusSortUserName){
+                break;
+            case 'username':
+                this.data.statusSortUserName =! this.data.statusSortUserName;
                 this.data.statusSortId = '';
                 this.data.statusSortName = '';
                 this.data.statusSortEmail = '';
-            }
-
-            this.sort('username');
-        });
-
-        this.sortEmail.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.data.statusSortEmail =! this.data.statusSortEmail;
-
-            if (this.data.statusSortEmail){
+                break;
+            case 'email':
+                this.data.statusSortEmail =! this.data.statusSortEmail;
                 this.data.statusSortId = '';
                 this.data.statusSortName = '';
                 this.data.statusSortUserName = '';
-            }
-
-            this.sort('email');
-        });
+        }
     }
 
     sort(type) {
@@ -259,19 +225,17 @@ class Listener {
         });
 
         this.searchInfo.onkeyup = (event) => {
-            if (event.keyCode == 13) {
-                let allHtml = document.querySelectorAll('tbody th,td');
+            if (event.keyCode == 13 && this.searchInfo.value.trim() != '') {
+                let allHtml = document.querySelectorAll('.searchEl');
                 let arrAllHtml = [...allHtml];
 
-                if (this.searchInfo.value != '') {
-                    let pattern = new RegExp(this.searchInfo.value.trim(), 'i'); //!!
+                let pattern = new RegExp(this.searchInfo.value.trim(), 'i');
 
-                    arrAllHtml.forEach((elem) => {
-                        if (elem.innerHTML.search(pattern) > -1) {  //!!
-                            this.render.showCoincidence(elem);
-                        }
-                    });
-                }
+                arrAllHtml.forEach((elem) => {
+                    if (elem.innerHTML.search(pattern) > -1) {
+                        this.render.showCoincidence(elem);
+                    }
+                });
             }
         }
     }
