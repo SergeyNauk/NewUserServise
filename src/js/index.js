@@ -95,7 +95,8 @@ class Listener {
         fetch(this.data.url)
             .then(response => {
                 return response.json()
-            }).then((result) => {
+            })
+            .then((result) => {
                 localStorage.setItem('etalonUserArr', JSON.stringify(result));
 
                 this.data.initUserArr();
